@@ -77,7 +77,7 @@ def similarity(predictions, references, **kwargs) -> float:
                 truncation=True, max_length=meaning_model.config.max_position_embeddings, return_tensors='pt',
             ).to(meaning_model.device)
             proba = torch.softmax(meaning_model(**batch).logits, -1)
-            scores.append(proba.to('float32').cpu().numpy().flatten())
+            scores.append(proba.to(dtype=torch.float32).cpu().numpy().flatten())
             del proba, batch
     return float(np.mean(np.concatenate(scores)))
 
