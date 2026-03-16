@@ -3,17 +3,10 @@ tag:
 task: ru_relation_definition
 task_alias: RuRelationDefinition
 dataset_name: relation_definition
-dataset_kwargs:
-  dataset_name: relation_definition
 include: _template_yaml
-generation_kwargs:
-  do_sample: false
-  temperature: 0.0
-  max_gen_toks: 1024
 metric_list:
-- metric: nerel_score
-  aggregation: !function utils.aggregate_results_definition
+- metric: !function utils.similarity
+  aggregation: mean
   higher_is_better: true
-  weight_by_size: true
 metadata:
-  version: 0.0
+  version: 1.0

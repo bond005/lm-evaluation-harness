@@ -3,17 +3,10 @@ tag:
 task: ru_entity_recognition
 task_alias: RuEntityRecognition
 dataset_name: entity_recognition
-dataset_kwargs:
-  dataset_name: entity_recognition
 include: _template_yaml
-generation_kwargs:
-  do_sample: false
-  temperature: 0.0
-  max_gen_toks: 1024
 metric_list:
-- metric: nerel_score
-  aggregation: !function utils.aggregate_results_entity
-  higher_is_better: true
-  weight_by_size: true
+  - metric: !function utils.f1
+    aggregation: mean
+    higher_is_better: true
 metadata:
-  version: 0.0
+  version: 1.0
