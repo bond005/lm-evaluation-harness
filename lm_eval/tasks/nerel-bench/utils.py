@@ -26,10 +26,7 @@ except ImportError:
 
 
 evaluator_name = "s-nlp/ruRoberta-large-paraphrase-v1"
-meaning_model = transformers.AutoModelForSequenceClassification.from_pretrained(
-    evaluator_name,
-    device_map="auto"
-)
+meaning_model = transformers.AutoModelForSequenceClassification.from_pretrained(evaluator_name)
 meaning_tokenizer = transformers.AutoTokenizer.from_pretrained(evaluator_name)
 
 
@@ -60,12 +57,14 @@ def similarity(predictions, references, **kwargs) -> float:
     num_samples = len(predictions)
     if num_samples != len(references):
         raise ValueError(f'The predictions do not correspond to the references! {num_samples} != {len(references)}')
+    if num_samples == 0:
+        raise ValueError(f'The predictions and the references are empty!')
     if 'minibatch' in kwargs:
         minibatch = int(kwargs['minibatch'])
         if minibatch < 1:
             raise ValueError(f"The minibatch is wrong! Expected a positive integer, got {kwargs['minibatch']}.")
     else:
-        minibatch = 1
+        minibatch = 16
     num_batches = math.ceil(num_samples / minibatch)
     scores = []
     for batch_idx in range(num_batches):
@@ -74,10 +73,11 @@ def similarity(predictions, references, **kwargs) -> float:
         with torch.inference_mode():
             batch = meaning_tokenizer(
                 predictions[batch_start:batch_end], references[batch_start:batch_end], 
-                truncation=True, max_length=meaning_model.config.max_position_embeddings, return_tensors='pt',
-            ).to(meaning_model.device)
+                truncation=True, padding=True, max_length=meaning_model.config.max_position_embeddings - 4,
+                return_tensors='pt',
+            )
             proba = torch.softmax(meaning_model(**batch).logits, -1)
-            scores.append(proba.to(dtype=torch.float32).cpu().numpy().flatten())
+            scores.append(proba[:, 1].numpy().flatten())
             del proba, batch
     return float(np.mean(np.concatenate(scores)))
 
