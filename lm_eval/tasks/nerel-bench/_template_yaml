@@ -11,3 +11,4 @@ generation_kwargs:
   do_sample: false
   temperature: 0.0
   max_gen_toks: 512
+num_fewshot: 3
