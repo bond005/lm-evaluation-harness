@@ -12,6 +12,13 @@ except ImportError:
     print(
         "Can not import nltk. If you try to score nerel-bench, do `pip install nltk`"
     )
+    
+try:
+    import sacrebleu
+except ImportError:
+    print(
+        "Can not import sacrebleu. If you try to score nerel-bench, do `pip install sacrebleu`"
+    )
 
 
 def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
@@ -23,6 +30,25 @@ def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
         return out_doc
 
     return dataset.map(_process_doc)
+    
+    
+def chrf(predictions, references, **kwargs) -> float:
+    """
+    Calculate average chrf score for all examples.
+    """
+    num_samples = len(predictions)
+    if num_samples != len(references):
+        raise ValueError(f'The predictions do not correspond to the references! {num_samples} != {len(references)}')
+    
+    if num_samples == 0:
+        return 0.0
+    
+    total_score = 0.0
+    for pred, ref in zip(predictions, references):
+        score = sacrebleu.sentence_chrf(pred, [ref]).score / 100.0
+        total_score += score
+    
+    return total_score / num_samples
 
 
 def f1(predictions, references, **kwargs) -> float:

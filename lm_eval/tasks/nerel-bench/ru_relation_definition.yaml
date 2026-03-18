@@ -5,7 +5,7 @@ task_alias: RuRelationDefinition
 dataset_name: relation_definition
 include: _template_yaml
 metric_list:
-- metric: chrf
+- metric: !function utils.chrf
   aggregation: mean
   ignore_case: true
   ignore_punctuation: true
