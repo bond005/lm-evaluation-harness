@@ -91,7 +91,7 @@ def f1(predictions, references, **kwargs) -> float:
         reference_entities = set(filter(
             lambda it2: len(it2) > 0,
             map(
-                lambda normalize_answer(it1, apply_stemmer=False),
+                lambda it1: normalize_answer(it1, apply_stemmer=False),
                 references[sample_idx].split("\n")
             )
         ))
