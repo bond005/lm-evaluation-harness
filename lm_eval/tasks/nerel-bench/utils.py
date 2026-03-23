@@ -8,6 +8,7 @@ try:
     import nltk
 
     nltk.download('punkt')
+    ru_stemmer = nltk.stem.snowball.RussianStemmer()
 except ImportError:
     print(
         "Can not import nltk. If you try to score nerel-bench, do `pip install nltk`"
@@ -30,6 +31,16 @@ def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
         return out_doc
 
     return dataset.map(_process_doc)
+
+
+def normalize_answer(sentence: str, apply_stemmer: bool = True) -> str:
+    words = list(filter(
+        lambda it2: (len(it2) > 0) and it2.isalnum(),
+        map(lambda it1: it1.strip(), wordpunct_tokenize(sentence.lower().strip()))
+    ))
+    if apply_stemmer:
+        words = [ru_stemmer.stem(it3) for it3 in words]
+    return ' '.join(words).strip()
     
     
 def chrf(predictions, references, **kwargs) -> float:
@@ -45,7 +56,7 @@ def chrf(predictions, references, **kwargs) -> float:
     
     total_score = 0.0
     for pred, ref in zip(predictions, references):
-        score = sacrebleu.sentence_chrf(pred, [ref]).score / 100.0
+        score = sacrebleu.sentence_chrf(normalize_answer(pred), [normalize_answer(ref)]).score / 100.0
         total_score += score
     
     return total_score / num_samples
@@ -73,14 +84,14 @@ def f1(predictions, references, **kwargs) -> float:
         predicted_entities = set(filter(
             lambda it2: len(it2) > 0,
             map(
-                lambda it1: ' '.join(list(filter(lambda wrd: wrd.isalnum(), nltk.wordpunct_tokenize(it1.lower())))).strip(),
+                lambda it1: normalize_answer(it1, apply_stemmer=False),
                 predictions[sample_idx].split("\n")
             )
         ))
         reference_entities = set(filter(
             lambda it2: len(it2) > 0,
             map(
-                lambda it1: ' '.join(list(filter(lambda wrd: wrd.isalnum(), nltk.wordpunct_tokenize(it1.lower())))).strip(),
+                lambda normalize_answer(it1, apply_stemmer=False),
                 references[sample_idx].split("\n")
             )
         ))
