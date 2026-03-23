@@ -34,12 +34,17 @@ def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
 
 
 def normalize_answer(sentence: str, apply_stemmer: bool = True) -> str:
+    sentence_ = sentence.lower().strip()
+    if len(sentence_) == 0:
+        return ''
     words = list(filter(
         lambda it2: (len(it2) > 0) and it2.isalnum(),
-        map(lambda it1: it1.strip(), nltk.wordpunkt_tokenize(sentence.lower().strip()))
+        map(lambda it1: it1.strip(), nltk.wordpunct_tokenize(sentence_))
     ))
     if apply_stemmer:
-        words = [ru_stemmer.stem(it3) for it3 in words]
+        words = list(filter(lambda it2: len(it2) > 0, map(lambda it1: ru_stemmer.stem(it1), words)))
+    if len(words) == 0:
+        return ''
     return ' '.join(words).strip()
     
     
@@ -84,14 +89,14 @@ def f1(predictions, references, **kwargs) -> float:
         predicted_entities = set(filter(
             lambda it2: len(it2) > 0,
             map(
-                lambda it1: normalize_answer(it1, apply_stemmer=False),
+                lambda it1: normalize_answer(it1),
                 predictions[sample_idx].split("\n")
             )
         ))
         reference_entities = set(filter(
             lambda it2: len(it2) > 0,
             map(
-                lambda it1: normalize_answer(it1, apply_stemmer=False),
+                lambda it1: normalize_answer(it1),
                 references[sample_idx].split("\n")
             )
         ))
