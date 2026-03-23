@@ -36,7 +36,7 @@ def process_docs(dataset: datasets.Dataset) -> datasets.Dataset:
 def normalize_answer(sentence: str, apply_stemmer: bool = True) -> str:
     words = list(filter(
         lambda it2: (len(it2) > 0) and it2.isalnum(),
-        map(lambda it1: it1.strip(), wordpunct_tokenize(sentence.lower().strip()))
+        map(lambda it1: it1.strip(), nltk.wordpunkt_tokenize(sentence.lower().strip()))
     ))
     if apply_stemmer:
         words = [ru_stemmer.stem(it3) for it3 in words]
